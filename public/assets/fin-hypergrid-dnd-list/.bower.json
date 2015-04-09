@@ -1,0 +1,32 @@
+{
+  "name": "fin-hypergrid-dnd-list",
+  "authors": [
+    "stevewirts <anonymous@example.com>"
+  ],
+  "description": "Element providing solution to no problem in particular.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer"
+  ],
+  "main": "fin-hypergrid-dnd-list.html",
+  "license": "MIT",
+  "homepage": "https://github.com/stevewirts/fin-hypergrid-dnd-list/",
+  "ignore": [
+    "/.*",
+    "/tests/"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "polymer": "Polymer/polymer#master"
+  },
+  "_release": "581eb69bf1",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "581eb69bf1f13760a13bdc3020bc2a0e943404e6"
+  },
+  "_source": "git://github.com/stevewirts/fin-hypergrid-dnd-list.git",
+  "_target": "*",
+  "_originalSource": "fin-hypergrid-dnd-list"
+}

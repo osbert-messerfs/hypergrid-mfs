@@ -1,0 +1,10 @@
+bin/
+bower_components/
+node_modules/
+views/
+public/angular/
+public/angular-bootstrap/
+public/angular-ui-router/
+public/bootstrap/
+public/font-awesome/
+public/main/
