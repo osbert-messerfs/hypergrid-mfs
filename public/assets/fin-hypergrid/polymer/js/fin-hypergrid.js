@@ -371,7 +371,6 @@
         isScrollButtonClick: false,
 
         domReady: function() {
-
             if (!propertiesInitialized) {
                 propertiesInitialized = true;
                 buildPolymerTheme();

@@ -17,6 +17,74 @@
     //var noop = function() {};
     var a = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
+    // [MFS] from propertySvc
+    var setNestedProperty = function(obj, fieldRefs, value) {
+        var nestedFieldRefs = fieldRefs.slice();
+        var ref = nestedFieldRefs.shift();
+
+        var ordinalMatch = ref.indexOf("[") >= 0 ? ref.match(/^(.*)\[([0-9]*)\]$/) : null;
+        if (!!ordinalMatch && ordinalMatch.length > 2) {
+            var ordinal = parseInt(ordinalMatch[2]);
+            var listRef = ordinalMatch[1];
+            obj[listRef] = obj[listRef] || [];
+            if (nestedFieldRefs.length === 0) {
+                if (obj[listRef].length > ordinal) {
+                    obj[listRef][ordinal] = value;
+                } else {
+                    // TODO: this assumes the ordinal specified matches the index of the appended object, which is definitely not guaranteed
+                    obj[listRef].append(value);
+                }
+            } else {
+                var newObj = obj[listRef][ordinal] || {};
+                if (obj[listRef].length > ordinal) {
+                    obj[listRef][ordinal] = newObj;
+                } else {
+                    // TODO: this assumes the ordinal specified matches the index of the appended object, which is definitely not guaranteed
+                    obj[listRef].append(newObj);
+                }
+                setNestedProperty(newObj, nestedFieldRefs, value);
+            }
+        } else {
+            if (nestedFieldRefs.length === 0) {
+                obj[ref] = value;
+            } else {
+                obj[ref] = obj[ref] || {};
+                setNestedProperty(obj[ref], nestedFieldRefs, value);
+            }
+        }
+    };
+    var getNestedProperty = function(obj, fieldRefs) {
+        if (obj == null)
+            return null;
+        var newFieldRefs = fieldRefs.slice();
+        var ref = newFieldRefs.shift();
+        var objRef = obj[ref];
+
+        if (ref.indexOf("[") >= 0) {
+            var ordinalMatch = ref.match(/^(.*)\[([0-9]*)\]$/);
+            if (!!ordinalMatch && ordinalMatch.length > 2) {
+                var arrayRef = obj[ordinalMatch[1]];
+                objRef = arrayRef != null ? arrayRef[ordinalMatch[2]] : null;
+            }
+        }
+
+        if (newFieldRefs.length === 0) {
+            return objRef;
+        } else {
+            return getNestedProperty(objRef, newFieldRefs);
+        }
+    };
+
+    var deleteNestedProperty = function (obj, fieldRefs) {
+        var newFieldRefs = fieldRefs.slice();
+        var ref = newFieldRefs.shift();
+        if (newFieldRefs.length === 0) {
+            delete obj[ref];
+        } else {
+            deleteNestedProperty(obj[ref], newFieldRefs);
+        }
+    };
+
     Polymer({ /* jslint ignore:line */
         data: [],
         headers: [],
@@ -25,8 +93,11 @@
         ready: function() {
             this.readyInit();
             // Get data from upper element 
-            var rawData = angular.element(this).parent().scope().$eval('data');
-            this.setData(rawData);
+            if (angular.element(this).parent().scope && angular.element(this).parent().scope()) {
+                var rawData = angular.element(this).parent().scope().$eval('data');
+                rawData && this.setData(rawData);    
+            }
+            
             this.tableState.sorted = [];
             this.sortStates = [' ', ' \u2191', ' \u2193'];
         },
@@ -91,7 +162,7 @@
         setData: function(jsonData) {
             this.data = jsonData;
             this.initDataIndexes();
-            this.initColumnIndexes();
+            
             this.changed();
         },
 
@@ -104,11 +175,12 @@
             var headers = new Array(columnDefinitions.length);
             for (var i = 0; i < columnDefinitions.length; i++) {
                 var each = columnDefinitions[i];
-                fields[i] = each.field;
+                fields[i] = each.data;
                 headers[i] = each.title;
             }
             this.setFields(fields);
             this.setHeaders(headers);
+            this.initColumnIndexes();
         },
 
         initDataIndexes: function() {
@@ -119,14 +191,30 @@
             }
         },
 
+        getProperty: function (obj, fieldRef) {
+            if (fieldRef == null) return null;
+            var fieldRefs = fieldRef.split('.');
+            return getNestedProperty(obj, fieldRefs);
+        },
+
+        setProperty: function (obj, fieldRef, value) {
+            var fieldRefs = fieldRef.split('.');
+            setNestedProperty(obj, fieldRefs, value);
+        },
+
+        deleteProperty: function (obj, fieldRef) {
+            var fieldRefs = fieldRef.split('.');
+            deleteNestedProperty(obj, fieldRefs);
+        },
+
         getValue: function(x, y) {
             var fields = this.getFields();
-            return this.data[y][fields[x]];
+            return this.getProperty(this.data[y], fields[x]);
         },
 
         setValue: function(x, y, value) {
             var fields = this.getFields();
-            this.data[y][fields[x]] = value;
+            return this.setProperty(this.data[y], fields[x], value);
         },
 
         getFixedRowValue: function(x, y) {
