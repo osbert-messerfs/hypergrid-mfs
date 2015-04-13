@@ -17,6 +17,8 @@
     //var noop = function() {};
     var a = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
+
+
     // [MFS] from propertySvc
     var setNestedProperty = function(obj, fieldRefs, value) {
         var nestedFieldRefs = fieldRefs.slice();
@@ -92,6 +94,9 @@
 
         ready: function() {
             this.readyInit();
+
+
+
             // Get data from upper element 
             if (angular.element(this).parent().scope && angular.element(this).parent().scope()) {
                 var rawData = angular.element(this).parent().scope().$eval('data');
@@ -181,6 +186,7 @@
             this.setFields(fields);
             this.setHeaders(headers);
             this.initColumnIndexes();
+            this.columns = columnDefinitions;
         },
 
         initDataIndexes: function() {
@@ -235,6 +241,18 @@
         getColumnCount: function() {
             var fields = this.getFields();
             return fields.length - this.tableState.hiddenColumns.length;
+        },
+
+        getCellEditorAt: function(x, y) {
+            noop(y);
+            var cellEditor;
+            if (this.columns[x] && this.columns[x].readOnly) {
+                cellEditor = this.grid.resolveCellEditor('readonly');
+            } else {
+                cellEditor = this.grid.resolveCellEditor('textfield');
+            }
+            
+            return cellEditor;
         },
 
         setState: function(state) {

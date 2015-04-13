@@ -19,6 +19,7 @@
         initializeCellEditor('fin-hypergrid-cell-editor-date');
         initializeCellEditor('fin-hypergrid-cell-editor-slider');
         initializeCellEditor('fin-hypergrid-cell-editor-spinner');
+        initializeCellEditor('fin-hypergrid-cell-editor-readonly');
     };
 
     var initializeCellEditor = function(name) {

@@ -62,6 +62,35 @@
                         scrollingEnabled: true
                     };
                     element.find("fin-hypergrid")[0].addProperties(lnfOverrides);
+
+                    // Default mfs cell Provider
+                    var behavior = element.find("fin-hypergrid")[0].getBehavior();
+                    var cellProvider = element.find("fin-hypergrid")[0].getBehavior().getCellProvider();
+                    cellProvider.getCell = function(config) {
+                        var renderer = cellProvider.cellCache.simpleCellRenderer;
+                        config.halign = 'left';
+                        var x = config.x;
+                        if (behavior && behavior.columns && behavior.columns.length && behavior.columns[x]) {
+                            var column = behavior.columns[x];
+                            if (column.type === 'numeric') {
+                                config.halign = 'right';
+                                if (numeral().unformat(config.value) < 0) {
+                                    config.fgColor = '#ff0000';
+                                }
+                            }
+                            if (column.format === '#,###') {
+                                config.value = numeral(config.value).format('0,0');
+                            }
+                            if (column.format === '#,###.00') {
+                                config.value = numeral(config.value).format('0,0.00');
+                            }
+                        }
+                        if (config.value == null) {
+                            config.value = '';
+                        }
+                        renderer.config = config;
+                        return renderer;
+                    };
                 });
             }            
         };
